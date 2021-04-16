@@ -1,2 +1,4 @@
-sudo python -m pip install ansible
-#
+apt install python-pip
+pip install pip -U
+pip install ansible
+
