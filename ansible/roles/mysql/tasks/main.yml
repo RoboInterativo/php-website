@@ -6,15 +6,59 @@
 
 - name: Update repositories cache and install  package
   apt:
-    name: python-pip
+    name: mysql-server
     update_cache: yes
-  when: ansible_facts.distribution=='Ubuntu'
+
+- name: Install bottle python package
+  pip:
+    name: PyMySQL
+
+#- name: Shell
+#  shell: "mysql_secure_installation -D -p 4c!QY&7h"
+
+- name: Shell
+  shell: "mysql -e 'show databases' |grep mydata |wc |awk '{print $1}' "
+  register: db_exists
+
+- name: debug
+  debug:
+    var: db_exists
+
+- name: debug
+  debug:
+    msg: "Database not exists"
+  when: db_exists.stdout=='0'
+
+- name: debug
+  debug:
+    msg: "Database  exists nothing to do"
+  when: db_exists.stdout!='0'
+
+- name: Shell CREATE DB
+  shell: " mysql -e 'CREATE DATABASE `mydata` CHARACTER SET utf8 COLLATE utf8_general_ci;'"
+  register: result
+  when: db_exists.stdout=='0'
+
+- name: debug
+  debug:
+    var: result
+  when: db_exists.stdout=='0'
+
+- name: create USER
+  mysql_user:
+    name: bob
+    password: 12345
+    priv: '*.*:ALL'
+    state: present
 
 
-- name: Package to remove
-  pip:
-    name: docker-py
-    state: absent
-- name: Package to install
-  pip:
-    name: docker
+#- name: Shell USER
+#  shell: " mysql -e 'CREATE USER `test_user`@`localhost` IDENTIFIED BY `password`;'"
+#  register: result
+
+- name: debug
+  debug:
+    var: result
+
+
+#"CREATE USER 'test_user'@'localhost' IDENTIFIED BY 'password';"
